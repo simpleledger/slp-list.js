@@ -9,10 +9,14 @@ This demo prints receiver list and calculated pro-rata BCH dividend payout amoun
 ![demo image](./demo.png)
 
 `git clone https://github.com/simpleledger/slp-list.git`
-`cd slp-list && `
+`cd slp-list`
 `npm install`
 `npm start`
 
-## Use as library
+## Install as library
 
 `npm install slp-list`
+
+## Install for browser
+
+```<script src='https://unpkg.com/slp-list'></script>```
