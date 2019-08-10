@@ -20,3 +20,10 @@ This demo prints receiver list and calculated pro-rata BCH dividend payout amoun
 ## Install for browser
 
 ```<script src='https://unpkg.com/slp-list'></script>```
+
+## Change Log
+
+#### 0.0.5
+    * Switched to big.js from bignumber.js in deps (demo.ts still uses BigNumber.js)
+    * Added MTP block selection option in demo.ts
+    * Other minor updates
