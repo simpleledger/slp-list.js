@@ -6,7 +6,8 @@ export class SlpdbQueries {
     static async GetAddressListFor(blockHeight: number, forTokenId: string, slpdb_url='https://slpdb.fountainhead.cash', displayValueAsString=false) {
         let txos1 = await this.GetUnspentTxosCreatedBefore(blockHeight, forTokenId, slpdb_url);
         let txos2 = await this.GetTxosCreatedBeforeButSpentLaterThan(blockHeight, forTokenId, slpdb_url);
-        let txos = txos1.concat(...txos2);
+        let txos3 = await this.GetTxosCreatedBeforeButSpentInMempool(blockHeight, forTokenId, slpdb_url);
+        let txos = txos1.concat(...txos2).concat(...txos3);
 
         let bals = new Map<string, Big>();
         txos.forEach((txo: TxoResponse) => {
@@ -37,7 +38,7 @@ export class SlpdbQueries {
                     { "$project": { "_id": 0, "txid": "$tx.h", "txo": "$gtxn.graphTxn.outputs" }},
                     { "$unwind": "$txo" },
                     { "$unwind": "$txo" }, 
-                    { "$match": { "txo.status":"UNSPENT" }},
+                    { "$match": { "txo.status":"UNSPENT" }}, // or "SPENT_UNCONFIRMED"  <-- this would be an alternative to the unconfirmed collection query
                     { "$project":{ "slpAmount":"$txo.slpAmount", "address":"$txo.address", "txid": 1 }}
                 ],
                 "limit": 100000
@@ -57,7 +58,7 @@ export class SlpdbQueries {
         return list;
     }
 
-    static async GetTxosCreatedBeforeButSpentLaterThan(blockHeight:number, forTokenId: string, slpdb_url='https://slpdb.fountainhead.cash') {
+    static async GetTxosCreatedBeforeButSpentLaterThan(blockHeight: number, forTokenId: string, slpdb_url='https://slpdb.fountainhead.cash') {
         let q = {
             "v": 3,
             "q": {
@@ -72,6 +73,38 @@ export class SlpdbQueries {
                     { "$unwind": "$c" },
                     { "$project":{ "spendTxid":"$txo.spendTxid", "status": "$txo.status", "slpAmount":"$txo.slpAmount", "address":"$txo.address", "spentAtBlock":"$c.blk.i", "txid": 1, "blk0":1 }},
                     { "$match": { "spentAtBlock":{"$gt": blockHeight}}}
+                ],
+                "limit": 100000
+            }
+        }
+
+        let data = Buffer.from(JSON.stringify(q)).toString('base64');
+
+        let config: AxiosRequestConfig = {
+            method: 'GET',
+            url: slpdb_url + "/q/" + data
+        };
+
+        let response = (await axios(config)).data;
+        const list: TxoResponse[] = response.c;
+
+        return list;
+    }
+
+    static async GetTxosCreatedBeforeButSpentInMempool(blockHeight: number, forTokenId: string, slpdb_url='https://slpdb.fountainhead.cash') {
+        let q = {
+            "v": 3,
+            "q": {
+                "db": ["c"],
+                "aggregate": [
+                    { "$match": { "out.h4":forTokenId, "blk.i": {"$lte": blockHeight } }},
+                    { "$lookup": { "from": "graphs", "localField": "tx.h", "foreignField": "graphTxn.txid", "as": "gtxn" }},
+                    { "$project": { "_id": 0, "txid": "$tx.h", "txo": "$gtxn.graphTxn.outputs" }},
+                    { "$unwind": "$txo" },
+                    { "$unwind": "$txo" }, 
+                    { "$lookup": {"from": "unconfirmed", "localField": "txo.spendTxid", "foreignField": "tx.h", "as": "u"}}, 
+                    { "$unwind": "$u" },
+                    { "$project":{ "spendTxid":"$txo.spendTxid", "status": "$txo.status", "slpAmount":"$txo.slpAmount", "address":"$txo.address", "txid": 1}}
                 ],
                 "limit": 100000
             }
