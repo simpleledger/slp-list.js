@@ -23,7 +23,10 @@ This demo prints receiver list and calculated pro-rata BCH dividend payout amoun
 
 ## Change Log
 
+### 0.0.6
+- Updated gRPC deps and utilized the new getMedianTime() method
+
 #### 0.0.5
-    * Switched to big.js from bignumber.js in deps (demo.ts still uses BigNumber.js)
-    * Added MTP block selection option in demo.ts
-    * Other minor updates
+- Switched to big.js from bignumber.js in deps (demo.ts still uses BigNumber.js)
+- Added MTP block selection option in demo.ts
+- Other minor updates

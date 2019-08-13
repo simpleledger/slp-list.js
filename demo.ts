@@ -10,18 +10,6 @@ let Spinner = require('cli-spinner').Spinner;
 (async function() {
     let client = new GrpcClient();
 
-    const median = (arr: number[]) => {   
-        const mid = Math.floor(arr.length / 2),
-        nums = [...arr].sort((a, b) => a - b);
-        return arr.length % 2 !== 0 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
-    }; //#Source https://bit.ly/2neWfJ2
-    
-    const fetchMtp = async function(height: number) {
-        let timestamps = await Promise.all([...Array(11).keys()]
-            .map(async i => (await client.getBlockInfo(height-i)).getInfo()!.getTimestamp()))
-        return median(timestamps)
-    }
-
     const slpdb_hosts: {[key:string]: string[]} = {
         'mainnet': ['https://slpdb.bitcoin.com', 'https://slpdb.fountainhead.cash', 'https://slpserve.imaginary.cash', 'http://localhost:3000'], 
         'testnet': ['https://tslpdb.bitcoin.com', 'http://localhost:3000']
@@ -70,13 +58,23 @@ let Spinner = require('cli-spinner').Spinner;
     var spinner = new Spinner('Getting Network Info.. %s');
     spinner.setSpinnerString('|/-\\');
     spinner.start();
-    const bestHeight = (await client.getBlockchainInfo()).getBestHeight();
-    let time = (await client.getBlockInfo(bestHeight)).getInfo()!.getTimestamp();
-    let currentMtp = await fetchMtp(bestHeight);
+    let bestHeight: number;
+    let currentMtp: number;
+    try {
+        bestHeight = (await client.getBlockchainInfo()).getBestHeight();
+        currentMtp = (await client.getBlockInfo(bestHeight)).getInfo()!.getMedianTime();
+    } catch(e) {
+        spinner.stop(true);
+        console.log('Network error:', e.message)
+        process.exit();
+    }
+
     spinner.stop(true);
 
-    console.log("Current Height:", bestHeight);
-    console.log("Current MTP-11:", currentMtp);
+    console.log("------------NETWORK INFO------------")
+    console.log("Current Height:", bestHeight!);
+    console.log("Current MTP-11:", currentMtp!);
+    console.log("------------------------------------")
 
     const time_mode = (await prompt([
         {
@@ -117,53 +115,22 @@ let Spinner = require('cli-spinner').Spinner;
         const updateProgress = function(h: number) {
             readline.clearLine(process.stdout, 0);
             readline.cursorTo(process.stdout, 0, 0);
-            process.stdout.write('Searching blocks... '+h);
+            process.stdout.write('Searching for block with MTP.. '+h);
         }
 
         // download block info 
         clearScreen();
-        let blockInfos: {h:number, t:number, m?:number}[] = [];
-        let counter = 0;
-        for(let i = bestHeight; bestHeight > 0; i--) {
+        for(let i = bestHeight!; bestHeight! > 0; i--) {
             let info = (await client.getBlockInfo(i)).getInfo()!;
-            blockInfos.push({ h: info!.getHeight(), t: info!.getTimestamp()  });
             updateProgress(info!.getHeight());
-            if(userMtp > info!.getTimestamp()) {
-                counter++;
-                if(counter === 15) // we keep going back 15 blocks past to make sure have accurate mtp-11
-                    break;
-            }
-        }
-        clearScreen();
-        
-        // compute MTP-11 for each block
-        blockInfos.sort((a,b)=>a.t-b.t).forEach((v, i) => {
-            v.m = 
-                Math.round(median(
-                    blockInfos.map(j => j.t).filter((v, k) => {
-                        if(i>=k && i-k<11)
-                            return true;
-                        else
-                            return false;
-                    })
-                )
-            )
-        })
-
-        // find the block for user's desired MTP
-        for(let i = 0; i < blockInfos.length; i++) {
-            if(blockInfos[i].m! >= userMtp) {
-                userHeight = blockInfos[i].h;
+            if(userMtp > info!.getMedianTime()) {
+                userHeight = i + 1;
                 break;
             }
         }
-
-        if(userHeight === 0){
-            console.log("Could not find specified MTP-11");
-            return;
-        }
+        clearScreen();
     } else if(time_mode === 'height') {
-        userHeight = (await prompt([
+        userHeight = parseInt((await prompt([
             {
                 type: 'input',
                 name: 'height',
@@ -174,9 +141,9 @@ let Spinner = require('cli-spinner').Spinner;
                     return /^\d+$/.test(h);
                 }
             }
-        ])).height;
+        ])).height);
     } else if (time_mode === 'best_block') {
-        userHeight = bestHeight;
+        userHeight = bestHeight!;
     }
 
     const answers = await prompt([
@@ -194,7 +161,7 @@ let Spinner = require('cli-spinner').Spinner;
         }
     ]);
 
-    if(userHeight === 0) throw Error();
+    if(userHeight === 0 || typeof userHeight !== 'number') throw Error('userHeight must be a number > 0.');
  
     spinner = new Spinner('processing.. %s');
     spinner.setSpinnerString('|/-\\');
