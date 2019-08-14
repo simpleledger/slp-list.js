@@ -27,10 +27,14 @@ npm start
 
 ## Change Log
 
+### demo.ts updates
+- Removed BigNumber.js dependency from demo.ts in favor of Big.js 
+- NOTE: All number rounding in demo uses default of ROUND_HALF_UP
+
 ### 0.0.6
 - Updated gRPC deps and utilized the new getMedianTime() method
 
-#### 0.0.5
+### 0.0.5
 - Switched to big.js from bignumber.js in deps (demo.ts still uses BigNumber.js)
 - Added MTP block selection option in demo.ts
 - Other minor updates

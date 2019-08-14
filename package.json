@@ -40,7 +40,6 @@
     "grpc-bchrpc-node": "0.5.4",
     "inquirer": "^6.5.0",
     "mkdirp": "^0.5.1",
-    "uglify-es": "^3.3.9",
-    "bignumber.js": "^9.0.0"
+    "uglify-es": "^3.3.9"
   }
 }

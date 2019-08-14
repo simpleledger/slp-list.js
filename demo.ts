@@ -3,7 +3,6 @@ import { SlpdbQueries } from './query';
 import { GrpcClient } from 'grpc-bchrpc-node';
 import * as readline from 'readline'
 import Big from 'big.js';
-import BigNumber from 'bignumber.js';
 let Bchaddr = require('bchaddrjs-slp');
 let Spinner = require('cli-spinner').Spinner;
 
@@ -187,20 +186,20 @@ let Spinner = require('cli-spinner').Spinner;
             type: 'input', 
             name: 'bch_amount', 
             message: 'Enter BCH amount to distribute:',
-            validate: function(id) { return /^\d+(\.\d{0,8})?$/.test(id); } // only 8 decimal places
+            validate: function(id) { return /^\d+(\.\d{0,8})?$/.test(id); } // up to 8 decimal places
         }])).bch_amount;        
 
         bals.forEach((v, k) => {
             let d = v.div(slp_total).mul(bch_amount);
             if(d.gt(0.00000000))
-                console.log(Bchaddr.toCashAddress(k) + ",", new BigNumber(d.toFixed()).toFormat(8, BigNumber.ROUND_DOWN));
+                console.log(Bchaddr.toCashAddress(k) + ",", d.toFixed(8));
         });
 
         console.log("-----------------COPY/PASTE TO ELECTRON CASH-------------------\n")
         console.log("Block Height:", userHeight);
         console.log("Address Count (includes 0 balances):", bals.size);
         console.log("Address Count (not including 0 balances):", Array.from(bals.values()).filter(v => v.gt(0)).length);
-        console.log("Receiver Count (not including 0 outputs):", Array.from(bals.values()).filter(v => new BigNumber(v.toFixed()).decimalPlaces(8).gte(0.00000001)).length);
+        console.log("Receiver Count (not including 0 outputs):", Array.from(bals.values()).filter(v => v.round(8).gte(0.00000001)).length);
         console.log("Tokens Circulating:", slp_total.toFixed());
     }
     else if(app_mode === 'slp_airdrop_list') {
@@ -226,8 +225,8 @@ let Spinner = require('cli-spinner').Spinner;
         let thresh = new Big(1).div(slp_divisibility);
         bals.forEach((v, k) => {
             let d = v.div(slp_total).mul(slp_amount);
-            if(new BigNumber(d.toFixed()).decimalPlaces(slp_divisibility, BigNumber.ROUND_HALF_DOWN).isGreaterThanOrEqualTo(thresh)) {
-                console.log(k + ",", new BigNumber(d.toFixed()).toFormat(slp_divisibility, BigNumber.ROUND_DOWN));
+            if(d.round(slp_divisibility).gte(thresh)) {
+                console.log(k + ",", d.toFixed(slp_divisibility));
                 counter+=1;
                 if(counter % 19 === 0) {
                     console.log("------------------- SLP TXN OUTPUT LIMIT ---------------------");
