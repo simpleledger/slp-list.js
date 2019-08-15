@@ -27,7 +27,8 @@ npm start
 
 ## Change Log
 
-### demo.ts updates
+### 0.0.7
+- Include Genesis balance in query.ts
 - Removed BigNumber.js dependency from demo.ts in favor of Big.js 
 - NOTE: All number rounding in demo uses default of ROUND_HALF_UP
 

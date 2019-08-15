@@ -169,6 +169,8 @@ let Spinner = require('cli-spinner').Spinner;
     spinner.stop(true);
 
     const slp_total = Array.from(bals.values()).reduce((a, c) => a.plus(c), new Big(0));
+    
+    console.log("------------------------------------------------------")
 
     if(app_mode === 'slp_shareholder_list') {
         bals.forEach((v, k) => {

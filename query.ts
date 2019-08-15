@@ -33,7 +33,7 @@ export class SlpdbQueries {
             "q": {
                 "db": ["c"],
                 "aggregate": [
-                    { "$match": { "out.h4":forTokenId, "blk.i": {"$lte": blockHeight } }},
+                    { "$match": { "$or":[{"out.h4":forTokenId},{"tx.h":forTokenId}], "blk.i": {"$lte": blockHeight } }},
                     { "$lookup": { "from": "graphs", "localField": "tx.h", "foreignField": "graphTxn.txid", "as": "gtxn" }},
                     { "$project": { "_id": 0, "txid": "$tx.h", "txo": "$gtxn.graphTxn.outputs" }},
                     { "$unwind": "$txo" },
@@ -64,7 +64,7 @@ export class SlpdbQueries {
             "q": {
                 "db": ["c"],
                 "aggregate": [
-                    { "$match": { "out.h4":forTokenId, "blk.i": {"$lte": blockHeight } }},
+                    { "$match": { "$or":[{"out.h4":forTokenId},{"tx.h":forTokenId}], "blk.i": {"$lte": blockHeight } }},
                     { "$lookup": { "from": "graphs", "localField": "tx.h", "foreignField": "graphTxn.txid", "as": "gtxn" }},
                     { "$project": { "_id": 0, "txid": "$tx.h", "txo": "$gtxn.graphTxn.outputs", "blk0": "$blk.i" }},
                     { "$unwind": "$txo" },
@@ -97,7 +97,7 @@ export class SlpdbQueries {
             "q": {
                 "db": ["c"],
                 "aggregate": [
-                    { "$match": { "out.h4":forTokenId, "blk.i": {"$lte": blockHeight } }},
+                    { "$match": { "$or":[{"out.h4":forTokenId},{"tx.h":forTokenId}], "blk.i": {"$lte": blockHeight } }},
                     { "$lookup": { "from": "graphs", "localField": "tx.h", "foreignField": "graphTxn.txid", "as": "gtxn" }},
                     { "$project": { "_id": 0, "txid": "$tx.h", "txo": "$gtxn.graphTxn.outputs" }},
                     { "$unwind": "$txo" },

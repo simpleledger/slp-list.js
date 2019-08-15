@@ -1,6 +1,6 @@
 {
   "name": "slp-list",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "List token holders and calculate pro-rata distributions at any block height",
   "main": "index.js",
   "files": [
