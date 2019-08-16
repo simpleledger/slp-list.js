@@ -4,10 +4,16 @@ import { Big } from 'big.js';
 export class SlpdbQueries {
 
     static async GetAddressListFor(blockHeight: number, forTokenId: string, slpdb_url='https://slpdb.fountainhead.cash', displayValueAsString=false) {
-        let txos1 = await this.GetUnspentTxosCreatedBefore(blockHeight, forTokenId, slpdb_url);
-        let txos2 = await this.GetTxosCreatedBeforeButSpentLaterThan(blockHeight, forTokenId, slpdb_url);
-        let txos3 = await this.GetTxosCreatedBeforeButSpentInMempool(blockHeight, forTokenId, slpdb_url);
-        let txos = txos1.concat(...txos2).concat(...txos3);
+        let txos: TxoResponse[] = [];
+        if(blockHeight > -1) {
+            let txos1 = await this.GetUnspentTxosCreatedBefore(blockHeight, forTokenId, slpdb_url);
+            let txos2 = await this.GetTxosCreatedBeforeButSpentLaterThan(blockHeight, forTokenId, slpdb_url);
+            let txos3 = await this.GetTxosCreatedBeforeButSpentInMempool(blockHeight, forTokenId, slpdb_url);
+            txos = txos.concat(...txos1).concat(...txos2).concat(...txos3);
+        } else {
+            let txos_mempool = await this.GetUnconfirmedBalances(forTokenId, slpdb_url);
+            txos = txos.concat(...txos_mempool);
+        }
 
         let bals = new Map<string, Big>();
         txos.forEach((txo: TxoResponse) => {
@@ -25,6 +31,33 @@ export class SlpdbQueries {
         }
 
         return bals;
+    }
+
+    static async GetUnconfirmedBalances(forTokenId: string, slpdb_url='https://slpdb.fountainhead.cash') {
+        let q = {
+            "v": 3,
+            "q": {
+                "db": ["a"],
+                "find": {
+                    "tokenDetails.tokenIdHex": forTokenId //,
+                    //"token_balance": { "$gte": minSlpBalanceForDividend }
+                },
+                "limit": 100000,
+                "project": {"address": 1, "token_balance": 1, "_id": 0 }
+            }
+        }
+
+        let data = Buffer.from(JSON.stringify(q)).toString('base64');
+
+        let config: AxiosRequestConfig = {
+            method: 'GET',
+            url: slpdb_url + "/q/" + data
+        };
+
+        let response = (await axios(config)).data;
+        const list: TxoResponse[] = response.a.map((i: any) => { i.slpAmount = i.token_balance; return i; });
+
+        return list;
     }
 
     static async GetUnspentTxosCreatedBefore(blockHeight: number, forTokenId: string, slpdb_url='https://slpdb.fountainhead.cash') {

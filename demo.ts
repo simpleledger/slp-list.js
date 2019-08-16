@@ -92,12 +92,16 @@ let Spinner = require('cli-spinner').Spinner;
                 {
                     name: 'Enter MTP-11 unix timestamp (must be > '+minMtp+')',
                     value: 'mtp'
+                },
+                {
+                    name: 'Use mempool state', 
+                    value: 'mempool'
                 }
             ]
         }
     ])).time_mode;
 
-    let userHeight = 0;
+    let userHeight = -1;
     if(time_mode === 'mtp') {
         const userMtp = (await prompt([
             {
@@ -160,7 +164,7 @@ let Spinner = require('cli-spinner').Spinner;
         }
     ]);
 
-    if(userHeight === 0 || typeof userHeight !== 'number') throw Error('userHeight must be a number > 0.');
+    if(typeof userHeight !== 'number') throw Error('userHeight must be a number.');
  
     spinner = new Spinner('processing.. %s');
     spinner.setSpinnerString('|/-\\');

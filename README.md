@@ -27,6 +27,9 @@ npm start
 
 ## Change Log
 
+### 0.0.8
+- Allow mempool slp list queries, use block height = -1
+
 ### 0.0.7
 - Include Genesis balance in query.ts
 - Removed BigNumber.js dependency from demo.ts in favor of Big.js 
