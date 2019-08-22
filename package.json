@@ -37,7 +37,7 @@
     "bchaddrjs-slp": "git://github.com/simpleledger/bchaddrjs.git#master",
     "browserify": "^16.5.0",
     "cli-spinner": "^0.2.10",
-    "grpc-bchrpc-node": "0.5.4",
+    "grpc-bchrpc-node": "^0.5.8",
     "inquirer": "^6.5.0",
     "mkdirp": "^0.5.1",
     "uglify-es": "^3.3.9"

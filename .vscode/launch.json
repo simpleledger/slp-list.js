@@ -7,10 +7,28 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Current File",
-            "program": "${file}",
+            "name": "Demo.js",
+            "program": "${workspaceFolder}/demo.js",
             "outFiles": ["${workspaceFolder}/**/*.js"], 
             "console": "integratedTerminal"
         },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Demo.js (Custom BCHD URL)",
+            "program": "${workspaceFolder}/demo.js",
+            "outFiles": ["${workspaceFolder}/**/*.js"], 
+            "console": "integratedTerminal",
+            "args": ["--bchd-url", "bchd.greyh.at:8335"]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Demo.js (Local BCHD)",
+            "program": "${workspaceFolder}/demo.js",
+            "outFiles": ["${workspaceFolder}/**/*.js"], 
+            "console": "integratedTerminal",
+            "args": ["--bchd-url", "localhost:8335", "--bchd-rootcert", "/Users/jamescramer/Library/Application Support/Bchd/rpc.cert"]
+        }
     ]
 }

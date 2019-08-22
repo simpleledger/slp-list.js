@@ -6,9 +6,22 @@ import Big from 'big.js';
 let Bchaddr = require('bchaddrjs-slp');
 let Spinner = require('cli-spinner').Spinner;
 
-(async function() {
-    let client = new GrpcClient();
+let args = process.argv.slice(2);
+let client: GrpcClient;
+let customUrl, certPath: string;
+if(args.includes('--bchd-rootcert') && args.includes('--bchd-url')) {
+    certPath = args[args.indexOf('--bchd-rootcert') + 1]
+    customUrl = args[args.indexOf('--bchd-url') + 1]
+    client = new GrpcClient({ url: customUrl, rootCertPath: certPath });
+} else if(args.includes('--bchdurl')) {
+    customUrl = args[args.indexOf('--bchd-url') + 1]
+    client = new GrpcClient({ url: customUrl });
+}
+else {
+    client = new GrpcClient();
+}
 
+(async function() {
     const slpdb_hosts: {[key:string]: string[]} = {
         'mainnet': ['https://slpdb.bitcoin.com', 'https://slpdb.fountainhead.cash', 'https://slpserve.imaginary.cash', 'http://localhost:3000'], 
         'testnet': ['https://tslpdb.bitcoin.com', 'http://localhost:3000']
@@ -49,7 +62,8 @@ let Spinner = require('cli-spinner').Spinner;
     let minHeight = 543375;
     let minMtp = 1534250155;
     if(bch_network === 'testnet') {
-        client = new GrpcClient({testnet: true});
+        if(!customUrl)
+            client = new GrpcClient({testnet: true});
         minHeight = 1253801;
         minMtp = 1535262813;
     }
