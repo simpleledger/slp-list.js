@@ -1,3 +1,7 @@
+# WARNING: This package is experimental. There are known exploits that can result in loss of user funds if addresses and quantities are not verified independently prior to making airdrops or dividend payments.  A new verion is being created to address these issues.  The current npm package has been deprecated.
+
+# Thank you for your attention and patience on this matter.
+
 ## slp-list
 
 Lists SLP token holders and balances for any blockchain height.
