@@ -1,16 +1,15 @@
 {
   "name": "slp-list",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "List token holders and calculate pro-rata distributions at any block height",
   "main": "index.js",
   "files": [
-    "index.ts",
-    "query.js",
-    "query.ts",
+    "*.d.ts",
+    "*.js",
     "dist/"
   ],
   "scripts": {
-    "start": "tsc && node demo.js",
+    "start": "ts-node demo.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc && mkdirp dist && browserify index.js --standalone slp-list > dist/slp-list.js && uglifyjs dist/slp-list.js > dist/slp-list.min.js"
   },
@@ -37,9 +36,12 @@
     "bchaddrjs-slp": "git://github.com/simpleledger/bchaddrjs.git#master",
     "browserify": "^16.5.0",
     "cli-spinner": "^0.2.10",
-    "grpc-bchrpc-node": "^0.5.8",
+    "grpc-bchrpc-web": "^0.10.1",
     "inquirer": "^6.5.0",
     "mkdirp": "^0.5.1",
-    "uglify-es": "^3.3.9"
+    "uglify-es": "^3.3.9",
+    "@improbable-eng/grpc-web-node-http-transport": "^0.12.0",
+    "ts-node": "^8.8.1",
+    "typescript": "^3.8.3"
   }
 }

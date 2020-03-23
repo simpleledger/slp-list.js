@@ -1,10 +1,6 @@
-# WARNING: This package is experimental. There are known exploits that can result in loss of user funds if addresses and quantities are not verified independently prior to making airdrops or dividend payments.  A new verion is being created to address these issues.  The current npm package has been deprecated.
-
-# Thank you for your attention and patience on this matter.
-
 ## slp-list
 
-Lists SLP token holders and balances for any blockchain height.
+This package includes simple queries to SLPDB that will provide a list of SLP token holders and balances for any blockchain height.  Users should double-check the results since SLPDB may be out of sync or corrupted
 
 ### BCH Dividend Demo
 
@@ -30,6 +26,10 @@ npm start
 ```<script src='https://unpkg.com/slp-list'></script>```
 
 ## Change Log
+
+### 0.1.0
+- Removed support for unconfirmed transactions
+- Don't publish .ts files to npm
 
 ### 0.0.8
 - Allow mempool slp list queries, use block height = -1
