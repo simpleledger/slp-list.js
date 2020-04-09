@@ -1,24 +1,23 @@
 ## slp-list
 
-This package includes simple queries to SLPDB that will provide a list of SLP token holders and balances for any previous blockchain height.
+This package includes simple queries to SLPDB to list token addresses and balances for any previous blockchain height.
 
 This library can:
 
-* List token holder addresses and balances
-* List token holder individual coin values and coin age
+* List balances for all token holder addressees
+* List individual UTXO coin values, coin age, block height, and address
 
-Applications can then use this information to:
+Applications can use this information to:
 
-* Distribute Bitcoin Cash dividends to token holders pro-rata
-
+* Distribute Bitcoin Cash rewards to token holders pro-rata
 * Airdrop existing token holders with new SLP tokens pro-rata
 * Build a token staking rewards systems using coin age
 
 Users should double-check the results since SLPDB may be out of sync or corrupted.
 
-### BCH Dividend Demo
+### CLI Demo
 
-This demo prints receiver list and calculated pro-rata BCH dividend payout amount. Copy/Paste the resulting list into Electron Cash.
+This demo allows the user to print SLP lists to the console. User can then copy/paste list result into Electron Cash to distribute BCH rewards.
 
 ![demo image](./demo.png)
 
