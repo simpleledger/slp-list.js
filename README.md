@@ -1,6 +1,20 @@
 ## slp-list
 
-This package includes simple queries to SLPDB that will provide a list of SLP token holders and balances for any blockchain height.  Users should double-check the results since SLPDB may be out of sync or corrupted
+This package includes simple queries to SLPDB that will provide a list of SLP token holders and balances for any previous blockchain height.
+
+This library can:
+
+* List token holder addresses and balances
+* List token holder individual coin values and coin age
+
+Applications can then use this information to:
+
+* Distribute Bitcoin Cash dividends to token holders pro-rata
+
+* Airdrop existing token holders with new SLP tokens pro-rata
+* Build a token staking rewards systems using coin age
+
+Users should double-check the results since SLPDB may be out of sync or corrupted.
 
 ### BCH Dividend Demo
 
@@ -11,17 +25,17 @@ This demo prints receiver list and calculated pro-rata BCH dividend payout amoun
 
 #### Get Started
 ```
-git clone https://github.com/simpleledger/slp-list.git
-cd slp-list
-npm install
-npm start
+$ git clone https://github.com/simpleledger/slp-list.git
+$ cd slp-list
+$ npm i
+$ npm start
 ```
 
-## Install as library
+## Install using npm
 
-`npm install slp-list`
+`npm i slp-list`
 
-## Install for browser
+## Install in browser
 
 ```<script src='https://unpkg.com/slp-list'></script>```
 
