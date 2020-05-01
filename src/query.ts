@@ -1,5 +1,8 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { Big } from "big.js";
+import { TxoResponse } from ".";
+
+const MAX_QUERY_LIMIT = 10 ** 9;
 
 export class SlpdbQueries {
 
@@ -60,11 +63,11 @@ export class SlpdbQueries {
                     { $unwind: "$txo" },
                     { $unwind: "$txo" },
                     { $match: { "txo.status": "UNSPENT" }},
-                    { $project: { 
+                    { $project: {
                         slpAmount: "$txo.slpAmount", address: "$txo.address", vout: "$txo.vout", txid: 1, blk: 1,
                     }},
                 ],
-                limit: 100000,
+                limit: MAX_QUERY_LIMIT,
             },
         };
 
@@ -100,7 +103,7 @@ export class SlpdbQueries {
                     }},
                     { $match: { spentAtBlock: {$gt: blockHeight}}},
                 ],
-                limit: 100000,
+                limit: MAX_QUERY_LIMIT,
             },
         };
 
@@ -135,7 +138,7 @@ export class SlpdbQueries {
                         address: "$txo.address", txid: 1, blk: 1,
                     }},
                 ],
-                limit: 100000,
+                limit: MAX_QUERY_LIMIT,
             },
         };
 
@@ -172,15 +175,4 @@ export class SlpdbQueries {
         const response = (await axios(config)).data.s[0];
         return response.blk as number;
     }
-}
-
-interface TxoResponse {
-    txid: string;
-    slpAmount: string;
-    address: string;
-    vout: number;
-    blk: number;
-    coinAge?: number;
-    spendTxid?: string;
-    spentAtBlock?: number;
 }
