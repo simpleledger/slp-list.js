@@ -1,7 +1,7 @@
 {
   "name": "slp-list",
   "version": "0.1.0",
-  "description": "List token holders and calculate pro-rata distributions at any block height",
+  "description": "List token holders and balances at any block height",
   "main": "dist/index.js",
   "files": [
     "*.d.ts",
