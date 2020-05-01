@@ -4,9 +4,8 @@
   "description": "List token holders and balances at any block height",
   "main": "dist/index.js",
   "files": [
-    "*.d.ts",
-    "*.js",
-    "dist/"
+    "dist/*/*.js",
+    "dist/*/*.d.ts"
   ],
   "scripts": {
     "start": "ts-node demo.ts",

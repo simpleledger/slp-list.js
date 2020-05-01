@@ -2,7 +2,7 @@ import Big from "big.js";
 import { GrpcClient } from "grpc-bchrpc-node";
 import { prompt } from "inquirer";
 import * as readline from "readline";
-import { SlpdbQueries } from "./query";
+import { SlpdbQueries } from "./src/query";
 
 const bchaddr = require("bchaddrjs-slp");
 const Spinner = require("cli-spinner").Spinner;
