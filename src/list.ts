@@ -1,34 +1,32 @@
 import axios, { AxiosRequestConfig } from "axios";
 import { Big } from "big.js";
-import { TxoResponse } from ".";
+import { GenesisInfo, TxoResponse } from ".";
+import { Config } from "./config";
 
 const MAX_QUERY_LIMIT = 10 ** 9;
 
-export class SlpdbQueries {
+export class List {
 
-    public static async GetAddressListFor(blockHeight: number, forTokenId: string, slpdbUrl = "https://slpdb.fountainhead.cash", displayValueAsString = false) {
-        const coins = await this.GetCoinListFor(blockHeight, forTokenId, slpdbUrl);
+    public static async GetAddressListFor(tokenId: string, blockCutoff: number, displayValueAsString = false) {
+        const coins = await this.GetCoinListFor(tokenId, blockCutoff);
         return await this.GetAddressList(coins, displayValueAsString);
     }
 
-    public static async GetCoinListFor(blockHeight: number, forTokenId: string, slpdbUrl = "https://slpdb.fountainhead.cash", coinAgeStartBlock = 0) {
-        if (blockHeight < coinAgeStartBlock) {
-            throw Error("Value for 'blockHeight' must be greater than coinAgeStartBlock.");
+    public static async GetCoinListFor(tokenId: string, blockCutoff: number, coinAgeStartBlock = 0) {
+        if (blockCutoff < coinAgeStartBlock) {
+            throw Error("Value for 'blockCutoff' must be greater than coinAgeStartBlock.");
         }
         let txos: TxoResponse[] = [];
-        if (blockHeight < 0) {
-            throw Error("Value for 'blockHeight' must be greater than 0.");
-        }
-        const txos1 = await this.GetUnspentTxosCreatedBefore(blockHeight, forTokenId, slpdbUrl);
-        const txos2 = await this.GetTxosCreatedBeforeButSpentLaterThan(blockHeight, forTokenId, slpdbUrl);
-        const txos3 = await this.GetTxosCreatedBeforeButSpentInMempool(blockHeight, forTokenId, slpdbUrl);
+        const txos1 = await this.GetUnspentTxosCreatedBefore(blockCutoff, tokenId);
+        const txos2 = await this.GetConfirmedTxosCreatedBeforeButSpentLaterThan(blockCutoff, tokenId);
+        const txos3 = await this.GetMempoolTxosCreatedAtOrBefore(blockCutoff, tokenId);
         txos = txos.concat(...txos1).concat(...txos2).concat(...txos3);
-        //const bestBlock = await this._getBestBlockHeight(slpdbUrl);
+        // const bestBlock = await this._getBestBlockHeight(Config.url);
         for (const txo of txos) {
             if (coinAgeStartBlock && txo.blk < coinAgeStartBlock) {
-                txo.coinAge = blockHeight - coinAgeStartBlock;
+                txo.coinAge = blockCutoff - coinAgeStartBlock;
             } else {
-                txo.coinAge = blockHeight - txo.blk;
+                txo.coinAge = blockCutoff - txo.blk;
             }
         }
         return txos;
@@ -51,7 +49,7 @@ export class SlpdbQueries {
         return balsMap;
     }
 
-    public static async GetUnspentTxosCreatedBefore(blockHeight: number, forTokenId: string, slpdbUrl = "https://slpdb.fountainhead.cash") {
+    public static async GetUnspentTxosCreatedBefore(blockHeight: number, forTokenId: string) {
         const q = {
             v: 3,
             q: {
@@ -75,7 +73,7 @@ export class SlpdbQueries {
 
         const config: AxiosRequestConfig = {
             method: "GET",
-            url: slpdbUrl + "/q/" + data,
+            url: Config.url + "/q/" + data,
         };
 
         const response = (await axios(config)).data;
@@ -84,7 +82,7 @@ export class SlpdbQueries {
         return list;
     }
 
-    public static async GetTxosCreatedBeforeButSpentLaterThan(blockHeight: number, forTokenId: string, slpdbUrl="https://slpdb.fountainhead.cash") {
+    public static async GetConfirmedTxosCreatedBeforeButSpentLaterThan(blockHeight: number, forTokenId: string) {
         const q = {
             v: 3,
             q: {
@@ -111,7 +109,7 @@ export class SlpdbQueries {
 
         const config: AxiosRequestConfig = {
             method: "GET",
-            url: slpdbUrl + "/q/" + data,
+            url: Config.url + "/q/" + data,
         };
 
         const response = (await axios(config)).data;
@@ -120,7 +118,7 @@ export class SlpdbQueries {
         return list;
     }
 
-    public static async GetTxosCreatedBeforeButSpentInMempool(blockHeight: number, forTokenId: string, slpdbUrl="https://slpdb.fountainhead.cash") {
+    public static async GetMempoolTxosCreatedAtOrBefore(blockHeight: number, forTokenId: string) {
         const q = {
             v: 3,
             q: {
@@ -146,7 +144,7 @@ export class SlpdbQueries {
 
         const config: AxiosRequestConfig = {
             method: "GET",
-            url: slpdbUrl + "/q/" + data,
+            url: Config.url + "/q/" + data,
         };
 
         const response = (await axios(config)).data;
@@ -155,24 +153,79 @@ export class SlpdbQueries {
         return list;
     }
 
-    public static async getBestBlockHeight(slpdbUrl="https://slpdb.fountainhead.cash") {
+        // This method is used to get all Tokens that are associated with a
+    // given document hash value and optional namespace.  The current use for
+    // this is to search for other tokens which are signaling to work with
+    // a specific app.
+    //
+    // For example, anyone who wants to have a chat group automatically
+    // discovered by the SLPChat d-app would need to create
+    // a NFT1 Group token with the Document Hash set to the value:
+    // 94dbe7179abd236cfb0fc5aaef86aad92214053f6de2885872dd85235cfa9f67
+    // (this is the id for SlpChat d-app)
+    //
+    // The SLPChat d-app would then use the following method to look for
+    // chat groups wishing to be discovered.
+    //
+    // Optionally, a ticker can be used a filter for namespacing by some d-app protocols,
+    // and can be used to further refine the search.
+    public static async SearchForTokenIdInDocHash(
+        docHashHex: string,
+        options: { blockHeight: number, ticker: string }|undefined =
+        { blockHeight: 0, ticker: "" },
+    ): Promise<GenesisInfo[]> {
+        let elemMatch;
+        if (options.ticker.length > 0) {
+            elemMatch = { $elemMatch: {
+                b7: Buffer.from(docHashHex, "hex").toString("base64"),
+                b4: options.ticker,
+            }};
+        } else {
+            elemMatch = { $elemMatch: {
+                b7: Buffer.from(docHashHex, "hex").toString("base64"),
+            }};
+        }
+
         const q = {
             v: 3,
             q: {
-                db: ["s"],
+                db: ["c", "u"],
                 aggregate: [
-                    { $match: {}},
-                    { $project: { _id: 0, blk: "$bchBlockHeight" }}
+                    { $match: {
+                        "out": elemMatch,
+                        "blk.i": { $gte: options.blockHeight },
+                    }},
+                    { $project: {
+                        tokenId: "$slp.detail.tokenIdHex",
+                    }},
+                    { $lookup: {
+                        from: "tokens",
+                        localField: "tokenId",
+                        foreignField: "tokenDetails.tokenIdHex",
+                        as: "token",
+                    }},
+                    {$unwind: "$token"},
+                    { $project: {
+                        _id: 0,
+                        stats: "$token.tokenStats",
+                        token: "$token.tokenDetails",
+                    }},
                 ],
-                limit: 1,
-            }
+                limit: MAX_QUERY_LIMIT,
+            },
         };
+
         const data = Buffer.from(JSON.stringify(q)).toString("base64");
+
         const config: AxiosRequestConfig = {
             method: "GET",
-            url: slpdbUrl + "/q/" + data,
+            url: Config.url + "/q/" + data,
         };
-        const response = (await axios(config)).data.s[0];
-        return response.blk as number;
+
+        const response = (await axios(config)).data;
+        const list: GenesisInfo[] = response.c;
+        list.concat(response.u);
+
+        return list;
     }
 }

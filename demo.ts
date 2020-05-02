@@ -2,7 +2,8 @@ import Big from "big.js";
 import { GrpcClient } from "grpc-bchrpc-node";
 import { prompt } from "inquirer";
 import * as readline from "readline";
-import { SlpdbQueries } from "./src/query";
+import { List } from "./src/list";
+import { Config } from "./src/config";
 
 const bchaddr = require("bchaddrjs-slp");
 const Spinner = require("cli-spinner").Spinner;
@@ -23,7 +24,7 @@ if (args.includes("--bchd-rootcert") && args.includes("--bchd-url")) {
 
 (async () => {
     const slpdbHosts: {[key: string]: string[]} = {
-        mainnet: ["https://slpdb.bitcoin.com", "https://slpdb.fountainhead.cash", "https://slpserve.imaginary.cash", "http://localhost:3000"],
+        mainnet: ["https://slpdb.fountainhead.cash", "https://slpserve.imaginary.cash", "http://localhost:3000"],
         testnet: ["https://tslpdb.bitcoin.com", "http://localhost:3000"],
     };
 
@@ -189,7 +190,11 @@ if (args.includes("--bchd-rootcert") && args.includes("--bchd-url")) {
         spinner = new Spinner("processing.. %s");
         spinner.setSpinnerString("|/-\\");
         spinner.start();
-        const bals =  await SlpdbQueries.GetAddressListFor(userHeight, answers.slpTokenId, answers.slpdbHost) as Map<string, Big>;
+        Config.SetUrl(answers.slpdbHost);
+        const bals =  await List.GetAddressListFor(
+            answers.slpTokenId,
+            userHeight,
+        ) as Map<string, Big>;
         spinner.stop(true);
         const slpTotal = Array.from(bals.values()).reduce((a, c) => a.plus(c), new Big(0));
         bals.forEach((v, k) => {
@@ -213,7 +218,8 @@ if (args.includes("--bchd-rootcert") && args.includes("--bchd-url")) {
         spinner = new Spinner("processing.. %s");
         spinner.setSpinnerString("|/-\\");
         spinner.start();
-        const bals =  await SlpdbQueries.GetAddressListFor(userHeight, answers.slpTokenId, answers.slpdbHost) as Map<string, Big>;
+        Config.SetUrl(answers.slpdbHost);
+        const bals =  await List.GetAddressListFor(answers.slpTokenId, userHeight) as Map<string, Big>;
         spinner.stop(true);
         const slpTotal = Array.from(bals.values()).reduce((a, c) => a.plus(c), new Big(0));
 
@@ -242,7 +248,8 @@ if (args.includes("--bchd-rootcert") && args.includes("--bchd-url")) {
         spinner = new Spinner("processing.. %s");
         spinner.setSpinnerString("|/-\\");
         spinner.start();
-        const coins = await SlpdbQueries.GetCoinListFor(userHeight, answers.slpTokenId, answers.slpdbHost, coinAgeFrom);
+        Config.SetUrl(answers.slpdbHost);
+        const coins = await List.GetCoinListFor(answers.slpTokenId, userHeight, coinAgeFrom);
         spinner.stop(true);
         coins.forEach((v, i) => {
             const a = v.slpAmount;
@@ -272,7 +279,8 @@ if (args.includes("--bchd-rootcert") && args.includes("--bchd-url")) {
         spinner = new Spinner("processing.. %s");
         spinner.setSpinnerString("|/-\\");
         spinner.start();
-        const bals =  await SlpdbQueries.GetAddressListFor(userHeight, answers.slpTokenId, answers.slpdbHost) as Map<string, Big>;
+        Config.SetUrl(answers.slpdbHost);
+        const bals =  await List.GetAddressListFor(answers.slpTokenId, userHeight) as Map<string, Big>;
         spinner.stop(true);
         const slpTotal = Array.from(bals.values()).reduce((a, c) => a.plus(c), new Big(0));
 
