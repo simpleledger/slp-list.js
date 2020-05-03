@@ -6,11 +6,11 @@ NOTE: All list results provided by this package should be double-checked between
 
 For a token this library can:
 
-* List all token holder balances and addresses with `List.GetAddressListFor(...)`
-* List all UTXO token values, coin age, block height, and address with `List.GetCoinListFor(...)`
-* List all tokens having their genesis documentHash field pointing to a common SLP Group ID or any child (e.g., this is being used for an experiemental slp d-app registration system for d-app version management) with `List.SearchForTokenIdInDocHash(...)`
-* List all NFTs that are part of an NFT Group (e.g., all users of a specificapplication Group ID) with `Nft1List.SearchForNftsInGroup(...)`
-* List all NFT token holders with `Nft1List.GetConfirmedNftTokenHolders(...)`
+* [List all token holder balances and addresses](#list-of-token-holders)
+* [List all token UTXO values](#list-of-coins)
+* [List all NFT token holders](#list-all-holders-of-an-nft-in-an-nft1-group)
+* [List tokens linked to a specific Token Document Hash](#list-linked-tokens)
+* [List all NFTs that were ever part of an NFT Group](#list-all-nfts-in-an-nft1-group-not-only-the-current-holders)
 
 Applications can use this information to:
 
@@ -88,6 +88,8 @@ let list;
 
 ### List of coins
 
+List the individual UTXOs, coin age, etc for a specified token ID:
+
 ```ts
 let slplist = require("slp-list");
 slplist.Config.SetUrl("https://slpdb.fountainhead.cash");
@@ -124,7 +126,33 @@ let list;
 // ]
 ```
 
-### List linked tokens 
+### List all holders of an NFT in an NFT1 Group
+
+List the NFT holders for a specific NFT1 Group:
+
+```ts
+let slplist = require("slp-list");
+slplist.Config.SetUrl("https://nyc1.slpdb.io");
+let list;
+
+(async () => {
+    list = await slplist.Nft1List.GetConfirmedNftTokenHolders(
+        "33e02bc67d71dab03d10a0f46050f7bfb8d8c3363a5b5bca622bcd837ca3feb8"
+    );
+    console.log(list);
+})();
+
+//  result:
+//  Map {
+//   '44f339784c8afc2d26ac821ab68394dfceed803a3b987df6abe5de5a81664b33' => 'simpleledger:qqzjzzlmx8h3hum3drsuk894jnf8r909ku4lankkg5'
+// }
+//  
+//   ...
+```
+
+### List linked tokens
+
+List all tokens with a Genesis pointing to a specific Document Hash:
 
 ```ts
 let slplist = require("slp-list");
@@ -162,7 +190,9 @@ let list;
 // ]
 ```
 
-### List all NFTs in an NFT1 Group (does not include holders)
+### List all NFTs in an NFT1 Group (not only the current holders)
+
+List all NFTs created for this specific NFT1 Group:
 
 ```ts
 let slplist = require("slp-list");
@@ -200,28 +230,6 @@ let list;
 //
 //  ]
 //
-```
-
-### List all holders of an NFT in an NFT Group
-
-```ts
-let slplist = require("slp-list");
-slplist.Config.SetUrl("https://nyc1.slpdb.io");
-let list;
-
-(async () => {
-    list = await slplist.Nft1List.GetConfirmedNftTokenHolders(
-        "33e02bc67d71dab03d10a0f46050f7bfb8d8c3363a5b5bca622bcd837ca3feb8"
-    );
-    console.log(list);
-})();
-
-//  result:
-//  Map {
-//   '44f339784c8afc2d26ac821ab68394dfceed803a3b987df6abe5de5a81664b33' => 'simpleledger:qqzjzzlmx8h3hum3drsuk894jnf8r909ku4lankkg5'
-// }
-//  
-//   ...
 ```
 
 
