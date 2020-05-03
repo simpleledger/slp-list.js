@@ -14,9 +14,9 @@
   },
   "unpkg": "dist/slp-list.min.js",
   "bugs": {
-    "url": "https://github.com/simpleledger/slp-list/issues"
+    "url": "https://github.com/simpleledger/slp-list.js/issues"
   },
-  "homepage": "https://github.com/simpleledger/slp-list#readme",
+  "homepage": "https://github.com/simpleledger/slp-list.js#readme",
   "keywords": [
     "SLP",
     "BCH",

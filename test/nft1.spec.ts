@@ -18,6 +18,11 @@ describe("Nft1List", () => {
 
     it("GetConfirmedNftTokenHolders", async () => {
         const map = await Nft1List.GetConfirmedNftTokenHolders("9ce9ebb34a1efcbe1649dc6cc9e62a2b2c2c4fb0947d7ea6412adefbc725829c");
-        assert.equal(map.size > 1, true);
+        assert.equal(map.size > 0, true);
+    });
+
+    it("GetConfirmedNftTokenHolders", async () => {
+        const map = await Nft1List.GetConfirmedNftTokenHolders("8d18aa8ccf1a4839f3f074d6134153d0017249cf99f37e5c560de978acaa38c3");
+        assert.equal(map.size === 0, true);
     });
 });

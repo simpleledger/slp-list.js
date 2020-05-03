@@ -9,7 +9,7 @@
             "request": "launch",
             "name": "Run Mocha",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-            "args": [ "${workspaceRoot}/test/**/*.spec.ts" ],
+            "args": [ "--timeout", "1000000", "${workspaceRoot}/test/**/*.spec.ts" ],
             "cwd": "${workspaceRoot}",
             "outFiles": []
         },

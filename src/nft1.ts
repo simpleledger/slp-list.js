@@ -66,14 +66,19 @@ export class Nft1List {
                         "tokenDetails.nftGroupIdHex": groupIdHex,
                         "graphTxn.outputs": { $elemMatch: { status: "UNSPENT" }},
                     }},
-                    { $project: {
-                        _id: 0,
-                        stats: "$tokenStats",
-                        token: "$tokenDetails",
-                    }},
-                    { $unwind: "$graphTxn.outputs" },
-                    { $match: { $elemMatch: { status: "UNSPENT" }}},
-                    { $project: { nftId: "$graphTxn.tokenIdHex", address: "$outputs.address" }},
+                    {
+                      $unwind: "$graphTxn.outputs",
+                    },
+                    {
+                      $match: {
+                        "graphTxn.outputs.status": "UNSPENT",
+                      },
+                    },
+                    {
+                      $project: {
+                        _id: 0, tokenId: "$tokenDetails.tokenIdHex", address: "$graphTxn.outputs.address",
+                      },
+                    },
                 ],
                 limit: MAX_QUERY_LIMIT,
             },
@@ -87,14 +92,15 @@ export class Nft1List {
         };
 
         const response = (await axios(config)).data;
-        const list: { nftId: string; address: string }[] = response.g;
+        const list: { tokenId: string; address: string }[] = response.g;
         let map = new Map<string, string>();
         list.forEach(nft => {
-            if (map.has(nft.nftId)) {
+            if (map.has(nft.tokenId)) {
                 throw Error("Db error: Cannot have multiple holders of the same NFT.");
             }
-            map.set(nft.nftId, nft.address);
+            map.set(nft.tokenId, nft.address);
         });
+
         return map;
     }
 }
