@@ -1,9 +1,7 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { Big } from "big.js";
-import { TxoResponse, GenesisInfo, Config } from ".";
+import { GenesisInfo, Config } from ".";
 
 const Buffer = require("buffer").Buffer;
-//const base64 = require("Base64");
 
 const MAX_QUERY_LIMIT = 10 ** 9;
 
@@ -12,26 +10,31 @@ export class Nft1List {
     // This method is used to get individual NFTs associated with a GroupId
     // Examples:
     //          1) NFTs represent the users of a chat group, or
-    //          2) NFT chilren may represent app versioning
+    //          2) NFTs may represent app versioning, where the group Id is the app's Id.
     public static async SearchForNftsInGroup(
         groupIdHex: string,
-        options: { blockHeight?: number }|undefined = { blockHeight: 0 },
+        options: { createdAfterHeight: number, createdBeforeHeight: number } = { createdAfterHeight: 0, createdBeforeHeight: 0 },
     ): Promise<GenesisInfo[]> {
-        let q = {
+        const match = { nftParentId: groupIdHex };
+        if (options.createdAfterHeight > 0) {
+            // @ts-ignore
+            match["tokenStats.createdAfterHeight"] = { $gt: options.createdAfterHeight };
+        }
+        if (options.createdBeforeHeight > 0) {
+            // @ts-ignore
+            match["tokenStats.createdBeforeHeight"] = { $lt: options.createdBeforeHeight };
+        }
+        const q = {
             v: 3,
             q: {
                 db: ["t"],
                 aggregate: [
-                    { $match: {
-                        nftParentId: groupIdHex,
-                        "tokenStats.block_created": { $gte: options.blockHeight },
-                    }},
+                    { $match: match },
                     { $project: {
                         _id: 0,
                         stats: "$tokenStats",
                         token: "$tokenDetails",
                     }},
-                    // TODO: do a lookup to UNSPENT NFTs ONLY!
                 ],
                 limit: MAX_QUERY_LIMIT,
             },
@@ -48,5 +51,50 @@ export class Nft1List {
         const list: GenesisInfo[] = response.t;
 
         return list;
+    }
+
+    public static async GetConfirmedNftTokenHolders(
+        groupIdHex: string
+    ): Promise<Map<string, string>> {
+
+        const q = {
+            v: 3,
+            q: {
+                db: ["g"],
+                aggregate: [
+                    { $match: {
+                        "tokenDetails.nftGroupIdHex": groupIdHex,
+                        "graphTxn.outputs": { $elemMatch: { status: "UNSPENT" }},
+                    }},
+                    { $project: {
+                        _id: 0,
+                        stats: "$tokenStats",
+                        token: "$tokenDetails",
+                    }},
+                    { $unwind: "$graphTxn.outputs" },
+                    { $match: { $elemMatch: { status: "UNSPENT" }}},
+                    { $project: { nftId: "$graphTxn.tokenIdHex", address: "$outputs.address" }},
+                ],
+                limit: MAX_QUERY_LIMIT,
+            },
+        };
+
+        const data = Buffer.from(JSON.stringify(q)).toString("base64");
+
+        const config: AxiosRequestConfig = {
+            method: "GET",
+            url: Config.url + "/q/" + data,
+        };
+
+        const response = (await axios(config)).data;
+        const list: { nftId: string; address: string }[] = response.g;
+        let map = new Map<string, string>();
+        list.forEach(nft => {
+            if (map.has(nft.nftId)) {
+                throw Error("Db error: Cannot have multiple holders of the same NFT.");
+            }
+            map.set(nft.nftId, nft.address);
+        });
+        return map;
     }
 }

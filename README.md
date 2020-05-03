@@ -9,7 +9,7 @@ For a token this library can:
 * List all token holder balances and addresses with `List.GetAddressListFor(...)`
 * List all UTXO token values, coin age, block height, and address with `List.GetCoinListFor(...)`
 * List all NFTs that are part of an NFT Group (e.g., all users of a specificapplication Group ID) with `Nft1List.SearchForNftsInGroup(...)`
-* List all tokens having their genesis documentHash field pointing to a common SLP Group ID or any child (e.g., this is being used for an experiemental slp d-app registration system for d-app version management) (`List.SearchForTokenIdInDocHash(...)`)
+* List all tokens having their genesis documentHash field pointing to a common SLP Group ID or any child (e.g., this is being used for an experiemental slp d-app registration system for d-app version management) with `List.SearchForTokenIdInDocHash(...)`
 
 Applications can use this information to:
 
@@ -84,6 +84,9 @@ let list;
 ```
 
 ## Change Log
+
+### 1.1.0
+- Added nft method ""
 
 ### 1.0.0
 - (breaking change) Complete refactoring of all methods
